@@ -20,7 +20,9 @@ import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
+import io.realm.internal.RxObjectObserver;
 import rx.Observable;
+import rx.Subscriber;
 
 /**
  * Factory class for creating observables from Realm types. Most likely from
@@ -54,6 +56,12 @@ public class RxRealm {
         return null;
     }
 
-
-
+    public static <E extends RealmObject> Observable<E> createObservable(final E object) {
+        return Observable.create(new Observable.OnSubscribe<E>() {
+            @Override
+            public void call(final Subscriber<? super E> observer) {
+                object.getRealm().addObserver(new RxObjectObserver<>(observer, object));
+            }
+        });
+    }
 }

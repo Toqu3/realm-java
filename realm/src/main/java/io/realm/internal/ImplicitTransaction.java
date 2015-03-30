@@ -16,9 +16,16 @@
 
 package io.realm.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import rx.Subscriber;
+
 public class ImplicitTransaction extends Group {
 
     private final SharedGroup parent;
+
+    private final ArrayList<ObjectObserver> observers = new ArrayList<ObjectObserver>();
 
     public ImplicitTransaction(Context context, SharedGroup sharedGroup, long nativePtr) {
         super(context, nativePtr, true);
@@ -27,7 +34,21 @@ public class ImplicitTransaction extends Group {
 
     public void advanceRead() {
         assertNotClosed();
-        parent.advanceRead();
+
+        long[] rows = new long[observers.size()];
+        int i = 0;
+        for (ObjectObserver observer : observers)
+            rows[i++] = observer.getRow().nativePtr;
+        long[] modified = parent.advanceRead(rows);
+        for (long modifiedIndex : modified)
+            observers.get(i).onChange();
+
+        for (i = observers.size() - 1; i >= 0; --i) {
+            if (!observers.get(i).getRow().isAttached()) {
+                observers.get(i).onDelete();
+                observers.remove(i);
+            }
+        }
     }
 
     public void promoteToWrite() {
@@ -61,10 +82,21 @@ public class ImplicitTransaction extends Group {
         }
     }
 
+    public <E> void addObserver(ObjectObserver observer) {
+        observers.add(observer);
+    }
+
     private void assertNotClosed() {
         if (isClosed() || parent.isClosed()) {
             throw new IllegalStateException("Cannot use ImplicitTransaction after it or its parent has been closed.");
         }
+    }
+
+    public boolean contains(final long[] array, final long v) {
+        for (final long e : array)
+            if (e == v)
+                return true;
+        return false;
     }
 
     protected void finalize() {} // Nullify the actions of Group.finalize()

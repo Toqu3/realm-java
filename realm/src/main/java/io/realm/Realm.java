@@ -55,14 +55,17 @@ import io.realm.exceptions.RealmIOException;
 import io.realm.exceptions.RealmMigrationNeededException;
 import io.realm.internal.ColumnType;
 import io.realm.internal.ImplicitTransaction;
+import io.realm.internal.ObjectObserver;
 import io.realm.internal.RealmJson;
 import io.realm.internal.Row;
+import io.realm.internal.RxObjectObserver;
 import io.realm.internal.SharedGroup;
 import io.realm.internal.Table;
 import io.realm.internal.TableView;
 import io.realm.internal.android.DebugAndroidLogger;
 import io.realm.internal.android.ReleaseAndroidLogger;
 import io.realm.internal.log.RealmLog;
+import rx.Subscriber;
 
 
 /**
@@ -181,6 +184,10 @@ public final class Realm implements Closeable {
 
     static {
         RealmLog.add(BuildConfig.DEBUG ? new DebugAndroidLogger() : new ReleaseAndroidLogger());
+    }
+
+    public <E extends RealmObject> void addObserver(ObjectObserver observer) {
+        transaction.addObserver(observer);
     }
 
     protected void checkIfValid() {

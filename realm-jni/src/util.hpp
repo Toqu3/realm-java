@@ -75,15 +75,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved);
         ConvertException(env, __FILE__, __LINE__); \
     }
 
-template <typename T>
-std::string num_to_string(T pNumber)
-{
- std::ostringstream oOStrStream;
- oOStrStream << pNumber;
- return oOStrStream.str();
-}
-
-
 #define MAX_JLONG  0x7FFFFFFFFFFFFFFFLL
 #define MIN_JLONG -0x8000000000000000LL
 #define MAX_JINT   0x7FFFFFFFL
@@ -297,7 +288,7 @@ inline bool RowIndexValid(JNIEnv* env, T* pTable, jlong rowIndex, bool offset=fa
         TR_ERR("rowIndex %" PRId64 " > %" PRId64 " - invalid!", S64(rowIndex), S64(size))
         ThrowException(env, IndexOutOfBounds,
             "rowIndex > available rows: " +
-            num_to_string(rowIndex) + " > " + num_to_string(size));
+            std::to_string(rowIndex) + " > " + std::to_string(size));
     }
     return !rowErr;
 }
@@ -365,8 +356,8 @@ inline bool TblIndexInsertValid(JNIEnv* env, T* pTable, jlong columnIndex, jlong
     if (rowErr) {
         TR_ERR("rowIndex %" PRId64 " > %" PRId64 " - invalid!", S64(rowIndex), S64(pTable->size()))
         ThrowException(env, IndexOutOfBounds,
-            "rowIndex " + num_to_string(rowIndex) +
-            " > available rows " + num_to_string(pTable->size()) + ".");
+            "rowIndex " + std::to_string(rowIndex) +
+            " > available rows " + std::to_string(pTable->size()) + ".");
     }
     return !rowErr;
 }

@@ -101,7 +101,7 @@ JNIEXPORT void JNICALL Java_io_realm_internal_LinkView_nativeMove
         if (old_pos < 0 || new_pos < 0 || size_t(old_pos) >= size || size_t(new_pos) >= size) {
             ThrowException(env, IndexOutOfBounds,
                 "Indices must be within range [0, " + num_to_string(size) + "[. " +
-                "Yours were (" + num_to_string(old_pos) + "," + num_to_string(new_pos) + ")");
+                "Yours were (" + std::to_string(old_pos) + "," + std::to_string(new_pos) + ")");
         }
         return LV(nativeLinkViewPtr)->move( S(old_pos), S(new_pos) );
     } CATCH_STD()
